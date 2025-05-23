@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import CustomCard from './custom-card/index.vue'
+import CascadarV2 from './components/CascadarV2.vue';
+import { reactive, ref } from 'vue';
 
 const cardList = [
   {
@@ -17,6 +19,58 @@ const cardList = [
     },
   },
 ]
+
+const modelValue = ref()
+
+const list = reactive([
+  {
+    id: 1,
+    name: '选项1',
+    children: [
+      {
+        id: 11,
+        name: '选项1-1',
+        children: [
+          {
+            id: 111,
+            name: '选项1-1-1',
+          },
+          {
+            id: 112,
+            name: '选项1-1-2',
+          },
+        ],
+      },
+      {
+        id: 12,
+        name: '选项1-2',
+      },
+    ],
+  },
+  {
+    id: 2,
+    name: '选项2',
+    children: [
+      {
+        id: 21,
+        name: '选项2-1',
+      },
+      {
+        id: 22,
+        name: '选项2-2',
+      },
+    ],
+  },
+]);
+
+const cascaderRef = ref<any>(null)
+
+const cascadarProps = {
+  emitPath: false,
+  value: "id",
+  label: "name",
+}
+
 </script>
 
 <template>
@@ -25,6 +79,7 @@ const cardList = [
       <CustomCard :cardType="card.cardType" :config="card.config" />
     </div>
   </div>
+  <CascadarV2 ref="cascaderRef" v-model="modelValue" expandAll filterable :props="cascadarProps" :options="list" />
 </template>
 <style lang="scss">
 *{
