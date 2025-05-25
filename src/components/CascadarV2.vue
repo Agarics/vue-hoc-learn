@@ -2,7 +2,7 @@
   <ElCascader
     ref="cascaderRef"
     v-bind="$attrs"
-    @focus="handleFocusAction">
+    @visible-change="handleVisibleChangeAction">
     <template v-for="(_, name) in $slots" #[name]="slotData">
       <slot :name="name"  />
     </template>
@@ -23,8 +23,8 @@ const props = defineProps({
     type: Function,
     default: () => {}
   },
-
-  expandAll: {
+  // 默认展开面板的节点
+  defaultExpand: {
     type: Boolean,
     default: false
   },
@@ -48,39 +48,39 @@ onMounted(() => {
   });
 })
 
-function handleFocusAction(event) {
-  props.onFocus?.(event);
+function handleVisibleChangeAction(visible) {
+  props.onVisibleChange?.(visible);
 
-  const checkedValue = castArray(attrs.modelValue).filter(Boolean);
-  // If there is no checkedValue, focus the first node
-  if(props.expandAll && checkedValue.length === 0) {
-    // cascaderPanelRef.value?.clearCheckedNodes();
-    const firstNode = cascaderPanelRef.value?.getFlattedNodes(true)[0];
-    
-    if (firstNode) {
-      firstNode.level > 1 && focusFirstNode(firstNode.level);
-    }
+  // panel展开处理选中
+  if (visible && props.defaultExpand) {
+    // 动态加载子节点 不处理默认展开
+    if(attrs.props?.lazy) return;
+    handleDefaultExpand();
   }
 }
 
-function focusFirstNode(level) {
-  const menuNodes = cascaderPanelRef.value?.$el.querySelectorAll('.el-cascader-menu');
-  // popover配置persistent默认为true 聚焦菜单dom节点不会被销毁
-  const isFirst = menuNodes.length === 1;
-  focusNode(isFirst ? level : 0);
+// 处理默认展开
+async function handleDefaultExpand() {
+  const checkedValue = castArray(attrs.modelValue).filter(Boolean);
+  // 如果有选中值不处理
+  if(checkedValue.length > 0) return;
+
+  await nextTick()
+  // 如果没有选中值，默认展开第一个
+  const firstNode = cascaderPanelRef.value?.getFlattedNodes(true)?.[0];
+  if(!firstNode) return;
+  const firstNodeLevel = firstNode.level;
+  focusNode(0);
+
   // 递归展开
   async function focusNode (currentLevel = 1) {
-    if(isFirst) {
-      if(currentLevel < 2) return;
-    } else {
-      if(currentLevel > level - 2) return;
-    }
+    if(currentLevel > firstNodeLevel - 2) return;
     const menuNodes = cascaderPanelRef.value?.$el.querySelectorAll('.el-cascader-menu');
-    const firstNode = menuNodes[isFirst ? menuNodes.length - 1 : currentLevel]?.querySelector('.el-cascader-node[tabindex="-1"]');
-    firstNode?.click();
+    const firstNodeEl = menuNodes[currentLevel]?.querySelector('.el-cascader-node[tabindex="-1"]');
+    firstNodeEl?.click();
+
     await nextTick();
-    
-    focusNode(isFirst ? currentLevel - 1 : currentLevel + 1);
+    focusNode(currentLevel + 1);
   }
 }
 </script>
