@@ -55,17 +55,19 @@ function handleVisibleChangeAction(visible) {
   if (visible && props.defaultExpand) {
     // 动态加载子节点 不处理默认展开
     if(attrs.props?.lazy) return;
-    handleDefaultExpand();
+
+    nextTick(() => {
+      handleDefaultExpand();
+    })
   }
 }
 
 // 处理默认展开
-async function handleDefaultExpand() {
+function handleDefaultExpand() {
   const checkedValue = castArray(attrs.modelValue).filter(Boolean);
   // 如果有选中值不处理
   if(checkedValue.length > 0) return;
 
-  await nextTick()
   // 如果没有选中值，默认展开第一个
   const firstNode = cascaderPanelRef.value?.getFlattedNodes(true)?.[0];
   if(!firstNode) return;

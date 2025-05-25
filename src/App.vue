@@ -79,7 +79,7 @@ const cascadarProps = {
       <CustomCard :cardType="card.cardType" :config="card.config" />
     </div>
   </div>
-  <CascadarV2 ref="cascaderRef" v-model="modelValue" expandAll filterable :props="cascadarProps" :options="list" />
+  <CascadarV2 ref="cascaderRef" v-model="modelValue" defaultExpand filterable :props="cascadarProps" :options="list" />
 </template>
 <style lang="scss">
 *{
